@@ -15,7 +15,6 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -131,36 +130,107 @@ const Dashboard: React.FC = () => {
   });
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5" }}>
-      {/* Simple Header */}
-      <AppBar position="static" color="primary" elevation={1}>
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#f8f9fa" }}>
+      {/* Elegant Header */}
+      <AppBar 
+        position="static" 
+        elevation={0}
+        sx={{ 
+          bgcolor: "#fff",
+          color: "#1a1a1a",
+          borderBottom: "1px solid #e0e0e0",
+        }}
+      >
+        <Toolbar sx={{ py: 1.5 }}>
+          <Typography 
+            variant="h5" 
+            component="div" 
+            sx={{ 
+              flexGrow: 1,
+              fontWeight: 600,
+              color: "#2563eb",
+              letterSpacing: "-0.5px"
+            }}
+          >
             AI Task Organizer
           </Typography>
-          <Typography variant="body2" sx={{ mr: 2 }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              mr: 3,
+              color: "text.secondary",
+              fontWeight: 500
+            }}
+          >
             {user?.name}
           </Typography>
-          <Button color="inherit" onClick={logout} startIcon={<LogoutIcon />}>
+          <Button 
+            variant="outlined"
+            color="inherit" 
+            onClick={logout} 
+            startIcon={<LogoutIcon />}
+            sx={{
+              borderRadius: 2,
+              textTransform: "none",
+              borderColor: "#e0e0e0",
+              color: "#666",
+              "&:hover": {
+                borderColor: "#2563eb",
+                bgcolor: "rgba(37, 99, 235, 0.04)"
+              }
+            }}
+          >
             Logout
           </Button>
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        {/* AI Input */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Add Tasks with AI
+      <Container maxWidth="lg" sx={{ py: 5 }}>
+        {/* AI Input Section */}
+        <Paper 
+          elevation={0}
+          sx={{ 
+            p: 4, 
+            mb: 4,
+            borderRadius: 3,
+            border: "1px solid #e0e0e0",
+            bgcolor: "#fff",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.05)"
+          }}
+        >
+          <Typography 
+            variant="h6" 
+            gutterBottom
+            sx={{ 
+              fontWeight: 600,
+              color: "#1a1a1a",
+              mb: 2
+            }}
+          >
+            ✨ AI-Powered Task Parser
           </Typography>
-
+          
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
+            <Alert 
+              severity="error" 
+              sx={{ 
+                mb: 2,
+                borderRadius: 2,
+                border: "1px solid #fee",
+              }}
+            >
               {error}
             </Alert>
           )}
           {success && (
-            <Alert severity="success" sx={{ mb: 2 }}>
+            <Alert 
+              severity="success" 
+              sx={{ 
+                mb: 2,
+                borderRadius: 2,
+                border: "1px solid #d4edda",
+              }}
+            >
               {success}
             </Alert>
           )}
@@ -169,91 +239,187 @@ const Dashboard: React.FC = () => {
             fullWidth
             multiline
             rows={3}
-            placeholder="Example: Finish report by Friday, call client, review code"
+            placeholder="Example: Finish report by Friday, call client, review code..."
             value={rawNotes}
             onChange={(e) => setRawNotes(e.target.value)}
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 3,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+                bgcolor: "#fafafa",
+                "&:hover": {
+                  bgcolor: "#fff",
+                },
+                "&.Mui-focused": {
+                  bgcolor: "#fff",
+                }
+              }
+            }}
           />
           <Button
             variant="contained"
+            size="large"
             onClick={handleParseNotes}
             disabled={loading}
+            sx={{
+              px: 4,
+              py: 1.5,
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 600,
+              bgcolor: "#2563eb",
+              boxShadow: "0 2px 8px rgba(37, 99, 235, 0.25)",
+              "&:hover": {
+                bgcolor: "#1d4ed8",
+                boxShadow: "0 4px 12px rgba(37, 99, 235, 0.35)",
+              }
+            }}
           >
-            {loading ? "Processing..." : "Parse Tasks"}
+            {loading ? "Processing..." : "Parse Tasks with AI"}
           </Button>
         </Paper>
 
-        {/* Filter */}
-        <Paper sx={{ p: 2, mb: 3 }}>
+        {/* Filter Bar */}
+        <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 2 }}>
+          <Typography variant="body2" sx={{ color: "text.secondary", fontWeight: 500 }}>
+            Filter:
+          </Typography>
           <FormControl size="small" sx={{ minWidth: 150 }}>
-            <InputLabel>Status</InputLabel>
             <Select
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
-              label="Status"
+              sx={{
+                borderRadius: 2,
+                bgcolor: "#fff",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  borderColor: "#e0e0e0",
+                }
+              }}
             >
-              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="all">All Tasks</MenuItem>
               <MenuItem value="pending">Pending</MenuItem>
               <MenuItem value="completed">Completed</MenuItem>
             </Select>
           </FormControl>
-        </Paper>
+          <Typography variant="body2" sx={{ ml: "auto", color: "text.secondary" }}>
+            {filteredTasks.length} {filteredTasks.length === 1 ? "task" : "tasks"}
+          </Typography>
+        </Box>
 
         {/* Tasks List */}
-        <Stack spacing={2}>
+        <Stack spacing={2.5}>
           {filteredTasks.map((task) => (
-            <Card key={task.id} variant="outlined">
-              <CardContent>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mb: 1,
-                  }}
-                >
+            <Card 
+              key={task.id}
+              elevation={0}
+              sx={{
+                border: "1px solid #e0e0e0",
+                borderRadius: 3,
+                bgcolor: "#fff",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  transform: "translateY(-2px)",
+                  borderColor: "#2563eb",
+                }
+              }}
+            >
+              <CardContent sx={{ pb: 1 }}>
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "start", mb: 1.5 }}>
                   <Typography
                     variant="h6"
                     sx={{
-                      textDecoration:
-                        task.status === "completed" ? "line-through" : "none",
+                      textDecoration: task.status === "completed" ? "line-through" : "none",
+                      color: task.status === "completed" ? "text.secondary" : "#1a1a1a",
+                      fontWeight: 600,
+                      fontSize: "1.1rem",
+                      flex: 1,
+                      mr: 2
                     }}
                   >
                     {task.title}
                   </Typography>
-                  <Box>
-                    <Chip
-                      label={task.priority}
-                      size="small"
+                  <Box sx={{ display: "flex", gap: 1 }}>
+                    <Chip 
+                      label={task.priority} 
+                      size="small" 
                       color={getPriorityColor(task.priority) as any}
-                      sx={{ mr: 1 }}
+                      sx={{ 
+                        fontWeight: 600,
+                        fontSize: "0.75rem"
+                      }}
                     />
-                    <Chip label={task.category.name} size="small" />
+                    <Chip 
+                      label={task.category.name} 
+                      size="small"
+                      sx={{
+                        bgcolor: "#f3f4f6",
+                        color: "#6b7280",
+                        fontWeight: 600,
+                        fontSize: "0.75rem"
+                      }}
+                    />
                   </Box>
                 </Box>
                 {task.notes && (
-                  <Typography variant="body2" color="text.secondary">
+                  <Typography 
+                    variant="body2" 
+                    color="text.secondary"
+                    sx={{ 
+                      mt: 1,
+                      pl: 0,
+                      lineHeight: 1.6
+                    }}
+                  >
                     {task.notes}
                   </Typography>
                 )}
               </CardContent>
-              <CardActions>
+              <CardActions sx={{ px: 2, pb: 2, pt: 1 }}>
                 {task.status === "pending" && (
                   <Button
                     size="small"
-                    onClick={() =>
-                      handleUpdateTask(task.id, { status: "completed" })
-                    }
+                    variant="contained"
+                    onClick={() => handleUpdateTask(task.id, { status: "completed" })}
+                    sx={{
+                      textTransform: "none",
+                      borderRadius: 1.5,
+                      px: 2,
+                      fontWeight: 600,
+                      bgcolor: "#10b981",
+                      "&:hover": {
+                        bgcolor: "#059669",
+                      }
+                    }}
                   >
                     Complete
                   </Button>
                 )}
-                <Button size="small" onClick={() => setEditDialog(task)}>
+                <Button 
+                  size="small" 
+                  onClick={() => setEditDialog(task)}
+                  sx={{
+                    textTransform: "none",
+                    color: "#6b7280",
+                    fontWeight: 500,
+                    "&:hover": {
+                      bgcolor: "rgba(0,0,0,0.04)",
+                    }
+                  }}
+                >
                   Edit
                 </Button>
-                <Button
-                  size="small"
-                  color="error"
+                <Button 
+                  size="small" 
+                  color="error" 
                   onClick={() => handleDeleteTask(task.id)}
+                  sx={{
+                    textTransform: "none",
+                    fontWeight: 500,
+                    "&:hover": {
+                      bgcolor: "rgba(239, 68, 68, 0.08)",
+                    }
+                  }}
                 >
                   Delete
                 </Button>
@@ -262,9 +428,25 @@ const Dashboard: React.FC = () => {
           ))}
 
           {filteredTasks.length === 0 && (
-            <Paper sx={{ p: 4, textAlign: "center" }}>
-              <Typography color="text.secondary">
-                No tasks yet. Add some notes above to get started!
+            <Paper 
+              elevation={0}
+              sx={{ 
+                p: 8, 
+                textAlign: "center",
+                borderRadius: 3,
+                border: "2px dashed #e0e0e0",
+                bgcolor: "#fafafa"
+              }}
+            >
+              <Typography 
+                variant="h6" 
+                color="text.secondary"
+                sx={{ mb: 1, fontWeight: 500 }}
+              >
+                No tasks yet
+              </Typography>
+              <Typography color="text.secondary" variant="body2">
+                Add some notes above and let AI organize them for you!
               </Typography>
             </Paper>
           )}
@@ -273,13 +455,16 @@ const Dashboard: React.FC = () => {
 
       {/* Edit Dialog */}
       {editDialog && (
-        <Dialog
-          open={!!editDialog}
-          onClose={() => setEditDialog(null)}
-          maxWidth="sm"
+        <Dialog 
+          open={!!editDialog} 
+          onClose={() => setEditDialog(null)} 
+          maxWidth="sm" 
           fullWidth
+          PaperProps={{
+            sx: { borderRadius: 3 }
+          }}
         >
-          <DialogTitle>Edit Task</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 600 }}>Edit Task</DialogTitle>
           <DialogContent>
             <TextField
               fullWidth
@@ -289,9 +474,14 @@ const Dashboard: React.FC = () => {
                 setEditDialog({ ...editDialog, title: e.target.value })
               }
               margin="normal"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                }
+              }}
             />
             <FormControl fullWidth margin="normal">
-              <InputLabel>Priority</InputLabel>
+              <Typography variant="body2" sx={{ mb: 1, color: "text.secondary" }}>Priority</Typography>
               <Select
                 value={editDialog.priority}
                 onChange={(e) =>
@@ -300,7 +490,7 @@ const Dashboard: React.FC = () => {
                     priority: e.target.value as any,
                   })
                 }
-                label="Priority"
+                sx={{ borderRadius: 2 }}
               >
                 <MenuItem value="High">High</MenuItem>
                 <MenuItem value="Medium">Medium</MenuItem>
@@ -308,7 +498,7 @@ const Dashboard: React.FC = () => {
               </Select>
             </FormControl>
             <FormControl fullWidth margin="normal">
-              <InputLabel>Status</InputLabel>
+              <Typography variant="body2" sx={{ mb: 1, color: "text.secondary" }}>Status</Typography>
               <Select
                 value={editDialog.status}
                 onChange={(e) =>
@@ -317,7 +507,7 @@ const Dashboard: React.FC = () => {
                     status: e.target.value as any,
                   })
                 }
-                label="Status"
+                sx={{ borderRadius: 2 }}
               >
                 <MenuItem value="pending">Pending</MenuItem>
                 <MenuItem value="completed">Completed</MenuItem>
@@ -333,10 +523,20 @@ const Dashboard: React.FC = () => {
                 setEditDialog({ ...editDialog, notes: e.target.value })
               }
               margin="normal"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                }
+              }}
             />
           </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setEditDialog(null)}>Cancel</Button>
+          <DialogActions sx={{ px: 3, pb: 3 }}>
+            <Button 
+              onClick={() => setEditDialog(null)}
+              sx={{ textTransform: "none" }}
+            >
+              Cancel
+            </Button>
             <Button
               variant="contained"
               onClick={() =>
@@ -347,6 +547,15 @@ const Dashboard: React.FC = () => {
                   notes: editDialog.notes,
                 })
               }
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                px: 3,
+                bgcolor: "#2563eb",
+                "&:hover": {
+                  bgcolor: "#1d4ed8",
+                }
+              }}
             >
               Save
             </Button>
