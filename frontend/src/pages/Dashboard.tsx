@@ -20,7 +20,7 @@ import {
   DialogContent,
   DialogActions,
   Alert,
-  Stack,
+  Grid,
 } from "@mui/material";
 import {
   Logout as LogoutIcon,
@@ -307,150 +307,158 @@ const Dashboard: React.FC = () => {
         </Box>
 
         {/* Tasks List */}
-        <Stack spacing={2.5}>
-          {filteredTasks.map((task) => (
-            <Card 
-              key={task.id}
-              elevation={0}
-              sx={{
-                border: "1px solid #e0e0e0",
-                borderRadius: 3,
-                bgcolor: "#fff",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                  transform: "translateY(-2px)",
-                  borderColor: "#2563eb",
-                }
-              }}
+        {filteredTasks.length === 0 ? (
+          <Paper 
+            elevation={0}
+            sx={{ 
+              p: 8, 
+              textAlign: "center",
+              borderRadius: 3,
+              border: "2px dashed #e0e0e0",
+              bgcolor: "#fafafa"
+            }}
+          >
+            <Typography 
+              variant="h6" 
+              color="text.secondary"
+              sx={{ mb: 1, fontWeight: 500 }}
             >
-              <CardContent sx={{ pb: 1 }}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "start", mb: 1.5 }}>
-                  <Typography
-                    variant="h6"
-                    sx={{
-                      textDecoration: task.status === "completed" ? "line-through" : "none",
-                      color: task.status === "completed" ? "text.secondary" : "#1a1a1a",
-                      fontWeight: 600,
-                      fontSize: "1.1rem",
-                      flex: 1,
-                      mr: 2
-                    }}
-                  >
-                    {task.title}
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 1 }}>
-                    <Chip 
-                      label={task.priority} 
+              No tasks yet
+            </Typography>
+            <Typography color="text.secondary" variant="body2">
+              Add some notes above and let AI organize them for you!
+            </Typography>
+          </Paper>
+        ) : (
+          <Grid container spacing={3}>
+            {filteredTasks.map((task) => (
+              <Grid item xs={12} sm={6} md={4} key={task.id}>
+                <Card 
+                  elevation={0}
+                  sx={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: 3,
+                    bgcolor: "#fff",
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                      transform: "translateY(-2px)",
+                      borderColor: "#2563eb",
+                    }
+                  }}
+                >
+                  <CardContent sx={{ pb: 1, flex: 1 }}>
+                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "start", mb: 1.5, flexWrap: "wrap", gap: 1 }}>
+                      <Typography
+                        variant="h6"
+                        sx={{
+                          textDecoration: task.status === "completed" ? "line-through" : "none",
+                          color: task.status === "completed" ? "text.secondary" : "#1a1a1a",
+                          fontWeight: 600,
+                          fontSize: "1rem",
+                          flex: "1 1 100%",
+                          mb: 1
+                        }}
+                      >
+                        {task.title}
+                      </Typography>
+                      <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+                        <Chip 
+                          label={task.priority} 
+                          size="small" 
+                          color={getPriorityColor(task.priority) as any}
+                          sx={{ 
+                            fontWeight: 600,
+                            fontSize: "0.7rem"
+                          }}
+                        />
+                        <Chip 
+                          label={task.category.name} 
+                          size="small"
+                          sx={{
+                            bgcolor: "#f3f4f6",
+                            color: "#6b7280",
+                            fontWeight: 600,
+                            fontSize: "0.7rem"
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                    {task.notes && (
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ 
+                          mt: 1,
+                          pl: 0,
+                          lineHeight: 1.5,
+                          fontSize: "0.875rem"
+                        }}
+                      >
+                        {task.notes}
+                      </Typography>
+                    )}
+                  </CardContent>
+                  <CardActions sx={{ px: 2, pb: 2, pt: 1 }}>
+                    {task.status === "pending" && (
+                      <Button
+                        size="small"
+                        variant="contained"
+                        onClick={() => handleUpdateTask(task.id, { status: "completed" })}
+                        sx={{
+                          textTransform: "none",
+                          borderRadius: 1.5,
+                          px: 2,
+                          fontWeight: 600,
+                          bgcolor: "#10b981",
+                          fontSize: "0.75rem",
+                          "&:hover": {
+                            bgcolor: "#059669",
+                          }
+                        }}
+                      >
+                        Complete
+                      </Button>
+                    )}
+                    <Button 
                       size="small" 
-                      color={getPriorityColor(task.priority) as any}
-                      sx={{ 
-                        fontWeight: 600,
-                        fontSize: "0.75rem"
-                      }}
-                    />
-                    <Chip 
-                      label={task.category.name} 
-                      size="small"
+                      onClick={() => setEditDialog(task)}
                       sx={{
-                        bgcolor: "#f3f4f6",
+                        textTransform: "none",
                         color: "#6b7280",
-                        fontWeight: 600,
-                        fontSize: "0.75rem"
+                        fontWeight: 500,
+                        fontSize: "0.75rem",
+                        "&:hover": {
+                          bgcolor: "rgba(0,0,0,0.04)",
+                        }
                       }}
-                    />
-                  </Box>
-                </Box>
-                {task.notes && (
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ 
-                      mt: 1,
-                      pl: 0,
-                      lineHeight: 1.6
-                    }}
-                  >
-                    {task.notes}
-                  </Typography>
-                )}
-              </CardContent>
-              <CardActions sx={{ px: 2, pb: 2, pt: 1 }}>
-                {task.status === "pending" && (
-                  <Button
-                    size="small"
-                    variant="contained"
-                    onClick={() => handleUpdateTask(task.id, { status: "completed" })}
-                    sx={{
-                      textTransform: "none",
-                      borderRadius: 1.5,
-                      px: 2,
-                      fontWeight: 600,
-                      bgcolor: "#10b981",
-                      "&:hover": {
-                        bgcolor: "#059669",
-                      }
-                    }}
-                  >
-                    Complete
-                  </Button>
-                )}
-                <Button 
-                  size="small" 
-                  onClick={() => setEditDialog(task)}
-                  sx={{
-                    textTransform: "none",
-                    color: "#6b7280",
-                    fontWeight: 500,
-                    "&:hover": {
-                      bgcolor: "rgba(0,0,0,0.04)",
-                    }
-                  }}
-                >
-                  Edit
-                </Button>
-                <Button 
-                  size="small" 
-                  color="error" 
-                  onClick={() => handleDeleteTask(task.id)}
-                  sx={{
-                    textTransform: "none",
-                    fontWeight: 500,
-                    "&:hover": {
-                      bgcolor: "rgba(239, 68, 68, 0.08)",
-                    }
-                  }}
-                >
-                  Delete
-                </Button>
-              </CardActions>
-            </Card>
-          ))}
-
-          {filteredTasks.length === 0 && (
-            <Paper 
-              elevation={0}
-              sx={{ 
-                p: 8, 
-                textAlign: "center",
-                borderRadius: 3,
-                border: "2px dashed #e0e0e0",
-                bgcolor: "#fafafa"
-              }}
-            >
-              <Typography 
-                variant="h6" 
-                color="text.secondary"
-                sx={{ mb: 1, fontWeight: 500 }}
-              >
-                No tasks yet
-              </Typography>
-              <Typography color="text.secondary" variant="body2">
-                Add some notes above and let AI organize them for you!
-              </Typography>
-            </Paper>
-          )}
-        </Stack>
+                    >
+                      Edit
+                    </Button>
+                    <Button 
+                      size="small" 
+                      color="error" 
+                      onClick={() => handleDeleteTask(task.id)}
+                      sx={{
+                        textTransform: "none",
+                        fontWeight: 500,
+                        fontSize: "0.75rem",
+                        "&:hover": {
+                          bgcolor: "rgba(239, 68, 68, 0.08)",
+                        }
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </CardActions>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
       </Container>
 
       {/* Edit Dialog */}
