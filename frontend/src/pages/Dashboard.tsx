@@ -35,12 +35,10 @@ import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   CheckCircle as CheckCircleIcon,
-  AssignmentTurnedIn as AssignmentIcon,
   Logout as LogoutIcon,
   SmartToy as AIIcon,
   FilterList as FilterIcon,
   TrendingUp as TrendingUpIcon,
-  CheckCircleOutline as DoneIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
