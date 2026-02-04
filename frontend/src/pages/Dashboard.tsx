@@ -24,21 +24,13 @@ import {
   DialogActions,
   CircularProgress,
   Alert,
-  Tabs,
-  Tab,
-  Avatar,
-  Badge,
-  Fade,
-  Grow,
+  Stack,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
   Edit as EditIcon,
   CheckCircle as CheckCircleIcon,
   Logout as LogoutIcon,
-  SmartToy as AIIcon,
-  FilterList as FilterIcon,
-  TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import axios from 'axios';
@@ -72,10 +64,7 @@ const Dashboard: React.FC = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
-  const [filterPriority, setFilterPriority] = useState<string>('all');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
   const [editDialog, setEditDialog] = useState<Task | null>(null);
-  const [tabValue, setTabValue] = useState(0);
 
   useEffect(() => {
     fetchTasks();
@@ -155,437 +144,133 @@ const Dashboard: React.FC = () => {
 
   const filteredTasks = tasks.filter(task => {
     if (filterStatus !== 'all' && task.status !== filterStatus) return false;
-    if (filterPriority !== 'all' && task.priority !== filterPriority) return false;
-    if (filterCategory !== 'all' && task.category.name !== filterCategory) return false;
     return true;
   });
 
-  const tasksByStatus = {
-    pending: filteredTasks.filter(t => t.status === 'pending'),
-    completed: filteredTasks.filter(t => t.status === 'completed')
-  };
-
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-  };
-
   return (
-    <Box sx={{ flexGrow: 1, minHeight: '100vh', bgcolor: '#f8fafc' }}>
-      {/* Header with Gradient */}
-      <AppBar
-        position="static"
-        elevation={0}
-        sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-        }}
-      >
-        <Toolbar sx={{ py: 2 }}>
-          <AIIcon sx={{ mr: 2, fontSize: 32 }} />
-          <Typography variant="h5" component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
+    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+      {/* Simple Header */}
+      <AppBar position="static" color="primary" elevation={1}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             AI Task Organizer
           </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.2)',
-                border: '2px solid rgba(255,255,255,0.3)',
-                fontWeight: 700,
-              }}
-            >
-              {getInitials(user?.name || 'U')}
-            </Avatar>
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>
-              <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                {user?.name}
-              </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.9 }}>
-                {user?.email}
-              </Typography>
-            </Box>
-            <Button
-              color="inherit"
-              onClick={logout}
-              startIcon={<LogoutIcon />}
-              sx={{
-                ml: 2,
-                bgcolor: 'rgba(255,255,255,0.1)',
-                '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
-                borderRadius: 2,
-              }}
-            >
-              Logout
-            </Button>
-          </Box>
+          <Typography variant="body2" sx={{ mr: 2 }}>
+            {user?.name}
+          </Typography>
+          <Button color="inherit" onClick={logout} startIcon={<LogoutIcon />}>
+            Logout
+          </Button>
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6}>
-            <Grow in timeout={500}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 3,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  borderRadius: 4,
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
-                      Total Tasks
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
-                      {tasks.length}
-                    </Typography>
-                  </Box>
-                  <TrendingUpIcon sx={{ fontSize: 48, opacity: 0.3 }} />
-                </Box>
-              </Paper>
-            </Grow>
-          </Grid>
-          <Grid item xs={12} sm={6}>
-            <Grow in timeout={700}>
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 3,
-                  background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-                  color: 'white',
-                  borderRadius: 4,
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
-                      Completed
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
-                      {tasksByStatus.completed.length}
-                    </Typography>
-                  </Box>
-                  <CheckCircleIcon sx={{ fontSize: 48, opacity: 0.3 }} />
-                </Box>
-              </Paper>
-            </Grow>
-          </Grid>
-        </Grid>
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        {/* AI Input */}
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Add Tasks with AI
+          </Typography>
+          
+          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
 
-        {/* AI Input Section */}
-        <Fade in timeout={1000}>
-          <Paper
-            elevation={0}
-            sx={{
-              p: 4,
-              mb: 4,
-              background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%)',
-              border: '1px solid',
-              borderColor: 'rgba(102, 126, 234, 0.1)',
-              borderRadius: 4,
-            }}
+          <TextField
+            fullWidth
+            multiline
+            rows={3}
+            placeholder="Example: Finish report by Friday, call client, review code"
+            value={rawNotes}
+            onChange={(e) => setRawNotes(e.target.value)}
+            sx={{ mb: 2 }}
+          />
+          <Button
+            variant="contained"
+            onClick={handleParseNotes}
+            disabled={loading}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-              <AIIcon sx={{ mr: 2, color: '#667eea', fontSize: 32 }} />
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5 }}>
-                  AI-Powered Task Parser
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Paste your scattered notes and let AI organize them into structured tasks
-                </Typography>
-              </Box>
-            </Box>
-
-            {error && (
-              <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
-                {error}
-              </Alert>
-            )}
-            {success && (
-              <Alert severity="success" sx={{ mb: 2, borderRadius: 2 }}>
-                {success}
-              </Alert>
-            )}
-
-            <TextField
-              fullWidth
-              multiline
-              rows={4}
-              placeholder="Example: Finish PPT by Friday, check AWS logs for errors, call client about project update, review Q4 reports"
-              value={rawNotes}
-              onChange={(e) => setRawNotes(e.target.value)}
-              sx={{
-                mb: 3,
-                '& .MuiOutlinedInput-root': {
-                  bgcolor: 'white',
-                  fontSize: '1rem',
-                },
-              }}
-            />
-            <Button
-              variant="contained"
-              size="large"
-              onClick={handleParseNotes}
-              disabled={loading}
-              startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <AIIcon />}
-              sx={{
-                px: 4,
-                py: 1.5,
-                fontSize: '1rem',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              }}
-            >
-              {loading ? 'AI is processing...' : 'Parse & Organize with AI'}
-            </Button>
-          </Paper>
-        </Fade>
-
-        {/* Filters */}
-        <Paper
-          elevation={0}
-          sx={{
-            p: 3,
-            mb: 3,
-            borderRadius: 4,
-            border: '1px solid',
-            borderColor: 'divider',
-          }}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <FilterIcon sx={{ mr: 1, color: 'text.secondary' }} />
-            <Typography variant="h6" sx={{ fontWeight: 600 }}>
-              Filters
-            </Typography>
-          </Box>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Status</InputLabel>
-                <Select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  label="Status"
-                >
-                  <MenuItem value="all">All Status</MenuItem>
-                  <MenuItem value="pending">Pending</MenuItem>
-                  <MenuItem value="completed">Completed</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Priority</InputLabel>
-                <Select
-                  value={filterPriority}
-                  onChange={(e) => setFilterPriority(e.target.value)}
-                  label="Priority"
-                >
-                  <MenuItem value="all">All Priorities</MenuItem>
-                  <MenuItem value="High">High</MenuItem>
-                  <MenuItem value="Medium">Medium</MenuItem>
-                  <MenuItem value="Low">Low</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={4}>
-              <FormControl fullWidth size="small">
-                <InputLabel>Category</InputLabel>
-                <Select
-                  value={filterCategory}
-                  onChange={(e) => setFilterCategory(e.target.value)}
-                  label="Category"
-                >
-                  <MenuItem value="all">All Categories</MenuItem>
-                  {categories.map(cat => (
-                    <MenuItem key={cat.id} value={cat.name}>{cat.name}</MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-          </Grid>
+            {loading ? 'Processing...' : 'Parse Tasks'}
+          </Button>
         </Paper>
 
-        {/* Tasks Tabs */}
-        <Paper
-          elevation={0}
-          sx={{
-            borderRadius: 4,
-            border: '1px solid',
-            borderColor: 'divider',
-            overflow: 'hidden',
-          }}
-        >
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <Tabs
-              value={tabValue}
-              onChange={(_, v) => setTabValue(v)}
-              sx={{
-                px: 2,
-                '& .MuiTab-root': {
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                  textTransform: 'none',
-                  minHeight: 64,
-                },
-              }}
+        {/* Filter */}
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <FormControl size="small" sx={{ minWidth: 150 }}>
+            <InputLabel>Status</InputLabel>
+            <Select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              label="Status"
             >
-              <Tab
-                label={
-                  <Badge badgeContent={tasksByStatus.pending.length} color="primary">
-                    <Box sx={{ mr: 2 }}>Pending</Box>
-                  </Badge>
-                }
-              />
-              <Tab
-                label={
-                  <Badge badgeContent={tasksByStatus.completed.length} color="success">
-                    <Box sx={{ mr: 2 }}>Completed</Box>
-                  </Badge>
-                }
-              />
-            </Tabs>
-          </Box>
+              <MenuItem value="all">All</MenuItem>
+              <MenuItem value="pending">Pending</MenuItem>
+              <MenuItem value="completed">Completed</MenuItem>
+            </Select>
+          </FormControl>
+        </Paper>
 
-          <Box sx={{ p: 3 }}>
-            <Grid container spacing={3}>
-              {(tabValue === 0 ? tasksByStatus.pending : tasksByStatus.completed).map(task => (
-                <Grid item xs={12} sm={6} md={4} key={task.id}>
-                  <Card
-                    elevation={0}
+        {/* Tasks List */}
+        <Stack spacing={2}>
+          {filteredTasks.map(task => (
+            <Card key={task.id} variant="outlined">
+              <CardContent>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                  <Typography
+                    variant="h6"
                     sx={{
-                      height: '100%',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                      transition: 'all 0.3s ease',
-                      '&:hover': {
-                        borderColor: 'primary.main',
-                        transform: 'translateY(-4px)',
-                        boxShadow: '0 12px 24px rgba(102, 126, 234, 0.15)',
-                      },
+                      textDecoration: task.status === 'completed' ? 'line-through' : 'none',
                     }}
                   >
-                    <CardContent sx={{ pb: 1 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-                        <Chip
-                          label={task.priority}
-                          size="small"
-                          color={getPriorityColor(task.priority) as any}
-                          sx={{ fontWeight: 700 }}
-                        />
-                        <Chip
-                          label={task.category.name}
-                          size="small"
-                          sx={{
-                            bgcolor: task.category.color,
-                            color: 'white',
-                            fontWeight: 600,
-                          }}
-                        />
-                      </Box>
-                      <Typography
-                        variant="h6"
-                        gutterBottom
-                        sx={{
-                          textDecoration: task.status === 'completed' ? 'line-through' : 'none',
-                          fontWeight: 600,
-                          lineHeight: 1.3,
-                          minHeight: 60,
-                        }}
-                      >
-                        {task.title}
-                      </Typography>
-                      {task.notes && (
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{
-                            display: '-webkit-box',
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: 'vertical',
-                            overflow: 'hidden',
-                            mt: 1,
-                          }}
-                        >
-                          {task.notes}
-                        </Typography>
-                      )}
-                    </CardContent>
-                    <CardActions sx={{ px: 2, pb: 2, gap: 1 }}>
-                      {task.status === 'pending' && (
-                        <Button
-                          size="small"
-                          variant="contained"
-                          startIcon={<CheckCircleIcon />}
-                          onClick={() => handleUpdateTask(task.id, { status: 'completed' })}
-                          sx={{ borderRadius: 2 }}
-                        >
-                          Complete
-                        </Button>
-                      )}
-                      <Box sx={{ flexGrow: 1 }} />
-                      <IconButton
-                        size="small"
-                        onClick={() => setEditDialog(task)}
-                        sx={{ borderRadius: 2 }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        color="error"
-                        onClick={() => handleDeleteTask(task.id)}
-                        sx={{ borderRadius: 2 }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </CardActions>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
+                    {task.title}
+                  </Typography>
+                  <Box>
+                    <Chip 
+                      label={task.priority} 
+                      size="small" 
+                      color={getPriorityColor(task.priority) as any}
+                      sx={{ mr: 1 }}
+                    />
+                    <Chip label={task.category.name} size="small" />
+                  </Box>
+                </Box>
+                {task.notes && (
+                  <Typography variant="body2" color="text.secondary">
+                    {task.notes}
+                  </Typography>
+                )}
+              </CardContent>
+              <CardActions>
+                {task.status === 'pending' && (
+                  <Button
+                    size="small"
+                    onClick={() => handleUpdateTask(task.id, { status: 'completed' })}
+                  >
+                    Complete
+                  </Button>
+                )}
+                <Button size="small" onClick={() => setEditDialog(task)}>
+                  Edit
+                </Button>
+                <Button size="small" color="error" onClick={() => handleDeleteTask(task.id)}>
+                  Delete
+                </Button>
+              </CardActions>
+            </Card>
+          ))}
 
-            {filteredTasks.length === 0 && (
-              <Paper
-                elevation={0}
-                sx={{
-                  p: 6,
-                  textAlign: 'center',
-                  bgcolor: 'background.default',
-                  borderRadius: 4,
-                }}
-              >
-                <AIIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary" gutterBottom>
-                  No tasks found
-                </Typography>
-                <Typography color="text.secondary">
-                  Start by adding some task notes above and let AI organize them!
-                </Typography>
-              </Paper>
-            )}
-          </Box>
-        </Paper>
+          {filteredTasks.length === 0 && (
+            <Paper sx={{ p: 4, textAlign: 'center' }}>
+              <Typography color="text.secondary">
+                No tasks yet. Add some notes above to get started!
+              </Typography>
+            </Paper>
+          )}
+        </Stack>
       </Container>
 
       {/* Edit Dialog */}
       {editDialog && (
-        <Dialog
-          open={!!editDialog}
-          onClose={() => setEditDialog(null)}
-          maxWidth="sm"
-          fullWidth
-          PaperProps={{
-            sx: { borderRadius: 4 },
-          }}
-        >
-          <DialogTitle sx={{ pb: 2 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              Edit Task
-            </Typography>
-          </DialogTitle>
+        <Dialog open={!!editDialog} onClose={() => setEditDialog(null)} maxWidth="sm" fullWidth>
+          <DialogTitle>Edit Task</DialogTitle>
           <DialogContent>
             <TextField
               fullWidth
@@ -614,7 +299,6 @@ const Dashboard: React.FC = () => {
                 label="Status"
               >
                 <MenuItem value="pending">Pending</MenuItem>
-                <MenuItem value="in_progress">In Progress</MenuItem>
                 <MenuItem value="completed">Completed</MenuItem>
               </Select>
             </FormControl>
@@ -628,10 +312,8 @@ const Dashboard: React.FC = () => {
               margin="normal"
             />
           </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 3 }}>
-            <Button onClick={() => setEditDialog(null)} sx={{ borderRadius: 2 }}>
-              Cancel
-            </Button>
+          <DialogActions>
+            <Button onClick={() => setEditDialog(null)}>Cancel</Button>
             <Button
               variant="contained"
               onClick={() => handleUpdateTask(editDialog.id, {
@@ -640,9 +322,8 @@ const Dashboard: React.FC = () => {
                 status: editDialog.status,
                 notes: editDialog.notes
               })}
-              sx={{ borderRadius: 2, px: 3 }}
             >
-              Save Changes
+              Save
             </Button>
           </DialogActions>
         </Dialog>
