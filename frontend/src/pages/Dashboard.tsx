@@ -155,13 +155,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return <DoneIcon sx={{ fontSize: 20 }} />;
-      default: return <AssignmentIcon sx={{ fontSize: 20 }} />;
-    }
-  };
-
   const filteredTasks = tasks.filter(task => {
     if (filterStatus !== 'all' && task.status !== filterStatus) return false;
     if (filterPriority !== 'all' && task.priority !== filterPriority) return false;
@@ -430,7 +423,7 @@ const Dashboard: React.FC = () => {
           <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
             <Tabs
               value={tabValue}
-              onChange={(e, v) => setTabValue(v)}
+              onChange={(_, v) => setTabValue(v)}
               sx={{
                 px: 2,
                 '& .MuiTab-root': {
