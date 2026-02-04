@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Box,
@@ -8,12 +8,10 @@ import {
   Button,
   Paper,
   TextField,
-  Grid,
   Card,
   CardContent,
   CardActions,
   Chip,
-  IconButton,
   Select,
   MenuItem,
   FormControl,
@@ -22,24 +20,20 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  CircularProgress,
   Alert,
   Stack,
-} from '@mui/material';
+} from "@mui/material";
 import {
-  Delete as DeleteIcon,
-  Edit as EditIcon,
-  CheckCircle as CheckCircleIcon,
   Logout as LogoutIcon,
-} from '@mui/icons-material';
-import { useAuth } from '../context/AuthContext';
-import axios from 'axios';
+} from "@mui/icons-material";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
 
 interface Task {
   id: number;
   title: string;
-  priority: 'High' | 'Medium' | 'Low';
-  status: 'pending' | 'completed';
+  priority: "High" | "Medium" | "Low";
+  status: "pending" | "completed";
   category: {
     id: number;
     name: string;
@@ -49,64 +43,49 @@ interface Task {
   createdAt: string;
 }
 
-interface Category {
-  id: number;
-  name: string;
-  color: string;
-}
-
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
-  const [rawNotes, setRawNotes] = useState('');
+  const [rawNotes, setRawNotes] = useState("");
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
   const [editDialog, setEditDialog] = useState<Task | null>(null);
 
   useEffect(() => {
     fetchTasks();
-    fetchCategories();
   }, []);
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get('/api/tasks');
+      const response = await axios.get("/api/tasks");
       setTasks(response.data.tasks);
     } catch (err) {
-      setError('Failed to fetch tasks');
-    }
-  };
-
-  const fetchCategories = async () => {
-    try {
-      const response = await axios.get('/api/tasks/categories');
-      setCategories(response.data.categories);
-    } catch (err) {
-      setError('Failed to fetch categories');
+      setError("Failed to fetch tasks");
     }
   };
 
   const handleParseNotes = async () => {
     if (!rawNotes.trim()) {
-      setError('Please enter some notes to parse');
+      setError("Please enter some notes to parse");
       return;
     }
 
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
-      const response = await axios.post('/api/tasks/parse', { rawNotes });
-      setSuccess(`✨ Successfully created ${response.data.tasks.length} task(s)!`);
-      setRawNotes('');
+      const response = await axios.post("/api/tasks/parse", { rawNotes });
+      setSuccess(
+        `✨ Successfully created ${response.data.tasks.length} task(s)!`
+      );
+      setRawNotes("");
       fetchTasks();
-      setTimeout(() => setSuccess(''), 5000);
+      setTimeout(() => setSuccess(""), 5000);
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Failed to parse notes');
+      setError(err.response?.data?.error || "Failed to parse notes");
     } finally {
       setLoading(false);
     }
@@ -118,37 +97,41 @@ const Dashboard: React.FC = () => {
       fetchTasks();
       setEditDialog(null);
     } catch (err) {
-      setError('Failed to update task');
+      setError("Failed to update task");
     }
   };
 
   const handleDeleteTask = async (taskId: number) => {
-    if (window.confirm('Are you sure you want to delete this task?')) {
+    if (window.confirm("Are you sure you want to delete this task?")) {
       try {
         await axios.delete(`/api/tasks/${taskId}`);
         fetchTasks();
       } catch (err) {
-        setError('Failed to delete task');
+        setError("Failed to delete task");
       }
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'High': return 'error';
-      case 'Medium': return 'warning';
-      case 'Low': return 'info';
-      default: return 'default';
+      case "High":
+        return "error";
+      case "Medium":
+        return "warning";
+      case "Low":
+        return "info";
+      default:
+        return "default";
     }
   };
 
-  const filteredTasks = tasks.filter(task => {
-    if (filterStatus !== 'all' && task.status !== filterStatus) return false;
+  const filteredTasks = tasks.filter((task) => {
+    if (filterStatus !== "all" && task.status !== filterStatus) return false;
     return true;
   });
 
   return (
-    <Box sx={{ minHeight: '100vh', bgcolor: '#f5f5f5' }}>
+    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5" }}>
       {/* Simple Header */}
       <AppBar position="static" color="primary" elevation={1}>
         <Toolbar>
@@ -170,9 +153,17 @@ const Dashboard: React.FC = () => {
           <Typography variant="h6" gutterBottom>
             Add Tasks with AI
           </Typography>
-          
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              {success}
+            </Alert>
+          )}
 
           <TextField
             fullWidth
@@ -188,7 +179,7 @@ const Dashboard: React.FC = () => {
             onClick={handleParseNotes}
             disabled={loading}
           >
-            {loading ? 'Processing...' : 'Parse Tasks'}
+            {loading ? "Processing..." : "Parse Tasks"}
           </Button>
         </Paper>
 
@@ -210,22 +201,29 @@ const Dashboard: React.FC = () => {
 
         {/* Tasks List */}
         <Stack spacing={2}>
-          {filteredTasks.map(task => (
+          {filteredTasks.map((task) => (
             <Card key={task.id} variant="outlined">
               <CardContent>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 1,
+                  }}
+                >
                   <Typography
                     variant="h6"
                     sx={{
-                      textDecoration: task.status === 'completed' ? 'line-through' : 'none',
+                      textDecoration:
+                        task.status === "completed" ? "line-through" : "none",
                     }}
                   >
                     {task.title}
                   </Typography>
                   <Box>
-                    <Chip 
-                      label={task.priority} 
-                      size="small" 
+                    <Chip
+                      label={task.priority}
+                      size="small"
                       color={getPriorityColor(task.priority) as any}
                       sx={{ mr: 1 }}
                     />
@@ -239,10 +237,12 @@ const Dashboard: React.FC = () => {
                 )}
               </CardContent>
               <CardActions>
-                {task.status === 'pending' && (
+                {task.status === "pending" && (
                   <Button
                     size="small"
-                    onClick={() => handleUpdateTask(task.id, { status: 'completed' })}
+                    onClick={() =>
+                      handleUpdateTask(task.id, { status: "completed" })
+                    }
                   >
                     Complete
                   </Button>
@@ -250,7 +250,11 @@ const Dashboard: React.FC = () => {
                 <Button size="small" onClick={() => setEditDialog(task)}>
                   Edit
                 </Button>
-                <Button size="small" color="error" onClick={() => handleDeleteTask(task.id)}>
+                <Button
+                  size="small"
+                  color="error"
+                  onClick={() => handleDeleteTask(task.id)}
+                >
                   Delete
                 </Button>
               </CardActions>
@@ -258,7 +262,7 @@ const Dashboard: React.FC = () => {
           ))}
 
           {filteredTasks.length === 0 && (
-            <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Paper sx={{ p: 4, textAlign: "center" }}>
               <Typography color="text.secondary">
                 No tasks yet. Add some notes above to get started!
               </Typography>
@@ -269,21 +273,33 @@ const Dashboard: React.FC = () => {
 
       {/* Edit Dialog */}
       {editDialog && (
-        <Dialog open={!!editDialog} onClose={() => setEditDialog(null)} maxWidth="sm" fullWidth>
+        <Dialog
+          open={!!editDialog}
+          onClose={() => setEditDialog(null)}
+          maxWidth="sm"
+          fullWidth
+        >
           <DialogTitle>Edit Task</DialogTitle>
           <DialogContent>
             <TextField
               fullWidth
               label="Title"
               value={editDialog.title}
-              onChange={(e) => setEditDialog({ ...editDialog, title: e.target.value })}
+              onChange={(e) =>
+                setEditDialog({ ...editDialog, title: e.target.value })
+              }
               margin="normal"
             />
             <FormControl fullWidth margin="normal">
               <InputLabel>Priority</InputLabel>
               <Select
                 value={editDialog.priority}
-                onChange={(e) => setEditDialog({ ...editDialog, priority: e.target.value as any })}
+                onChange={(e) =>
+                  setEditDialog({
+                    ...editDialog,
+                    priority: e.target.value as any,
+                  })
+                }
                 label="Priority"
               >
                 <MenuItem value="High">High</MenuItem>
@@ -295,7 +311,12 @@ const Dashboard: React.FC = () => {
               <InputLabel>Status</InputLabel>
               <Select
                 value={editDialog.status}
-                onChange={(e) => setEditDialog({ ...editDialog, status: e.target.value as any })}
+                onChange={(e) =>
+                  setEditDialog({
+                    ...editDialog,
+                    status: e.target.value as any,
+                  })
+                }
                 label="Status"
               >
                 <MenuItem value="pending">Pending</MenuItem>
@@ -307,8 +328,10 @@ const Dashboard: React.FC = () => {
               label="Notes"
               multiline
               rows={3}
-              value={editDialog.notes || ''}
-              onChange={(e) => setEditDialog({ ...editDialog, notes: e.target.value })}
+              value={editDialog.notes || ""}
+              onChange={(e) =>
+                setEditDialog({ ...editDialog, notes: e.target.value })
+              }
               margin="normal"
             />
           </DialogContent>
@@ -316,12 +339,14 @@ const Dashboard: React.FC = () => {
             <Button onClick={() => setEditDialog(null)}>Cancel</Button>
             <Button
               variant="contained"
-              onClick={() => handleUpdateTask(editDialog.id, {
-                title: editDialog.title,
-                priority: editDialog.priority,
-                status: editDialog.status,
-                notes: editDialog.notes
-              })}
+              onClick={() =>
+                handleUpdateTask(editDialog.id, {
+                  title: editDialog.title,
+                  priority: editDialog.priority,
+                  status: editDialog.status,
+                  notes: editDialog.notes,
+                })
+              }
             >
               Save
             </Button>

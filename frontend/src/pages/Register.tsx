@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Container,
   Box,
@@ -8,30 +8,30 @@ import {
   Button,
   Typography,
   Alert,
-} from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+} from "@mui/material";
+import { useAuth } from "../context/AuthContext";
 
 const Register: React.FC = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return;
     }
 
     if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+      setError("Password must be at least 6 characters");
       return;
     }
 
@@ -39,9 +39,11 @@ const Register: React.FC = () => {
 
     try {
       await register(email, password, name);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Registration failed. Please try again.');
+      setError(
+        err.response?.data?.error || "Registration failed. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -50,10 +52,10 @@ const Register: React.FC = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        bgcolor: '#f5f5f5',
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        bgcolor: "#f5f5f5",
       }}
     >
       <Container maxWidth="xs">
@@ -61,11 +63,20 @@ const Register: React.FC = () => {
           <Typography variant="h4" align="center" gutterBottom>
             Create Account
           </Typography>
-          <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography
+            variant="body2"
+            align="center"
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
             Sign up to get started
           </Typography>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <form onSubmit={handleSubmit}>
             <TextField
@@ -102,8 +113,12 @@ const Register: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              error={confirmPassword !== '' && password !== confirmPassword}
-              helperText={confirmPassword !== '' && password !== confirmPassword ? 'Passwords do not match' : ''}
+              error={confirmPassword !== "" && password !== confirmPassword}
+              helperText={
+                confirmPassword !== "" && password !== confirmPassword
+                  ? "Passwords do not match"
+                  : ""
+              }
               sx={{ mb: 3 }}
             />
             <Button
@@ -113,14 +128,17 @@ const Register: React.FC = () => {
               size="large"
               disabled={loading}
             >
-              {loading ? 'Creating Account...' : 'Create Account'}
+              {loading ? "Creating Account..." : "Create Account"}
             </Button>
           </form>
 
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Box sx={{ mt: 2, textAlign: "center" }}>
             <Typography variant="body2">
-              Already have an account?{' '}
-              <Link to="/login" style={{ textDecoration: 'none', color: '#1976d2' }}>
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                style={{ textDecoration: "none", color: "#1976d2" }}
+              >
                 Sign In
               </Link>
             </Typography>

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import {
   Container,
   Box,
@@ -8,27 +8,27 @@ import {
   Button,
   Typography,
   Alert,
-} from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+} from "@mui/material";
+import { useAuth } from "../context/AuthContext";
 
 const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Login failed. Please try again.');
+      setError(err.response?.data?.error || "Login failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -37,10 +37,10 @@ const Login: React.FC = () => {
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        bgcolor: '#f5f5f5',
+        minHeight: "100vh",
+        display: "flex",
+        alignItems: "center",
+        bgcolor: "#f5f5f5",
       }}
     >
       <Container maxWidth="xs">
@@ -48,11 +48,20 @@ const Login: React.FC = () => {
           <Typography variant="h4" align="center" gutterBottom>
             AI Task Organizer
           </Typography>
-          <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography
+            variant="body2"
+            align="center"
+            color="text.secondary"
+            sx={{ mb: 3 }}
+          >
             Sign in to your account
           </Typography>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <form onSubmit={handleSubmit}>
             <TextField
@@ -80,14 +89,17 @@ const Login: React.FC = () => {
               size="large"
               disabled={loading}
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? "Signing In..." : "Sign In"}
             </Button>
           </form>
 
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
+          <Box sx={{ mt: 2, textAlign: "center" }}>
             <Typography variant="body2">
-              Don't have an account?{' '}
-              <Link to="/register" style={{ textDecoration: 'none', color: '#1976d2' }}>
+              Don't have an account?{" "}
+              <Link
+                to="/register"
+                style={{ textDecoration: "none", color: "#1976d2" }}
+              >
                 Sign Up
               </Link>
             </Typography>
