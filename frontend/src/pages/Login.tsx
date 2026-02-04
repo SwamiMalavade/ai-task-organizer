@@ -8,12 +8,16 @@ import {
   Button,
   Typography,
   Alert,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -108,10 +112,23 @@ const Login: React.FC = () => {
             <TextField
               fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      sx={{ color: '#6b7280' }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               sx={{ 
                 mb: 3.5,
                 '& .MuiOutlinedInput-root': {

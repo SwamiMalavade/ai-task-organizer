@@ -8,7 +8,10 @@ import {
   Button,
   Typography,
   Alert,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 
 const Register: React.FC = () => {
@@ -16,6 +19,8 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -134,11 +139,24 @@ const Register: React.FC = () => {
             <TextField
               fullWidth
               label="Password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               helperText="Minimum 6 characters"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      sx={{ color: '#6b7280' }}
+                    >
+                      {showPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               sx={{ 
                 mb: 2,
                 '& .MuiOutlinedInput-root': {
@@ -149,12 +167,25 @@ const Register: React.FC = () => {
             <TextField
               fullWidth
               label="Confirm Password"
-              type="password"
+              type={showConfirmPassword ? 'text' : 'password'}
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               error={confirmPassword !== '' && password !== confirmPassword}
               helperText={confirmPassword !== '' && password !== confirmPassword ? 'Passwords do not match' : ''}
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      edge="end"
+                      sx={{ color: '#6b7280' }}
+                    >
+                      {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
               sx={{ 
                 mb: 3.5,
                 '& .MuiOutlinedInput-root': {
