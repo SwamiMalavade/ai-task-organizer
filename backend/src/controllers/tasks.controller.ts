@@ -1,38 +1,37 @@
-import { Response } from 'express';
-import { body, validationResult } from 'express-validator';
-import pool from '../config/database';
-import aiService from '../services/ai.service';
-import { AuthRequest } from '../middleware/auth';
-import { RowDataPacket, ResultSetHeader } from 'mysql2';
+import { Response } from "express";
+import { body, validationResult } from "express-validator";
+import pool from "../config/database";
+import aiService from "../services/ai.service";
+import { AuthRequest } from "../middleware/auth";
 
-interface TaskRow extends RowDataPacket {
+interface TaskRow {
   id: number;
   user_id: number;
   title: string;
-  priority: 'High' | 'Medium' | 'Low';
+  priority: "High" | "Medium" | "Low";
   category_id: number;
   category_name: string;
   category_color: string;
-  status: 'pending' | 'completed';
+  status: "pending" | "completed";
   notes: string | null;
   created_at: Date;
   updated_at: Date;
   completed_at: Date | null;
 }
 
-interface CategoryRow extends RowDataPacket {
+interface CategoryRow {
   id: number;
   name: string;
   color: string;
 }
 
 export const parseNotesValidation = [
-  body('rawNotes')
+  body("rawNotes")
     .trim()
     .notEmpty()
-    .withMessage('Task notes cannot be empty')
+    .withMessage("Task notes cannot be empty")
     .isLength({ min: 3, max: 5000 })
-    .withMessage('Task notes must be between 3 and 5000 characters')
+    .withMessage("Task notes must be between 3 and 5000 characters"),
 ];
 
 export const parseNotes = async (req: AuthRequest, res: Response) => {
@@ -46,33 +45,35 @@ export const parseNotes = async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
 
     await pool.query(
-      'INSERT INTO raw_notes (user_id, raw_text) VALUES (?, ?)',
+      "INSERT INTO raw_notes (user_id, raw_text) VALUES ($1, $2)",
       [userId, rawNotes]
     );
 
     const parsedTasks = await aiService.parseTasksFromNotes(rawNotes);
 
-    const [categories] = await pool.query<CategoryRow[]>(
-      'SELECT id, name FROM categories'
+    const categoriesResult = await pool.query(
+      "SELECT id, name FROM categories"
     );
 
-    const categoryMap = new Map(categories.map(cat => [cat.name, cat.id]));
+    const categories = categoriesResult.rows as CategoryRow[];
+    const categoryMap = new Map(categories.map((cat) => [cat.name, cat.id]));
 
     const taskIds: number[] = [];
     for (const task of parsedTasks) {
-      const categoryId = categoryMap.get(task.category) || categoryMap.get('Other')!;
-      
-      const [result] = await pool.query<ResultSetHeader>(
-        'INSERT INTO tasks (user_id, title, priority, category_id) VALUES (?, ?, ?, ?)',
+      const categoryId =
+        categoryMap.get(task.category) || categoryMap.get("Other")!;
+
+      const result = await pool.query(
+        "INSERT INTO tasks (user_id, title, priority, category_id) VALUES ($1, $2, $3, $4) RETURNING id",
         [userId, task.title, task.priority, categoryId]
       );
-      
-      taskIds.push(result.insertId);
+
+      taskIds.push(result.rows[0].id);
     }
 
     if (taskIds.length > 0) {
-      const placeholders = taskIds.map(() => '?').join(',');
-      const [tasks] = await pool.query<TaskRow[]>(
+      const placeholders = taskIds.map((_, i) => `$${i + 1}`).join(",");
+      const tasksResult = await pool.query(
         `SELECT t.*, c.name as category_name, c.color as category_color
          FROM tasks t
          LEFT JOIN categories c ON t.category_id = c.id
@@ -81,14 +82,14 @@ export const parseNotes = async (req: AuthRequest, res: Response) => {
       );
 
       res.json({
-        message: 'Tasks parsed successfully',
-        tasks: tasks.map(formatTask)
+        message: "Tasks parsed successfully",
+        tasks: tasksResult.rows.map(formatTask),
       });
     } else {
-      res.json({ message: 'No tasks parsed', tasks: [] });
+      res.json({ message: "No tasks parsed", tasks: [] });
     }
   } catch (error: any) {
-    const errorMessage = error.message || 'Failed to parse notes';
+    const errorMessage = error.message || "Failed to parse notes";
     res.status(500).json({ error: errorMessage });
   }
 };
@@ -102,32 +103,36 @@ export const getTasks = async (req: AuthRequest, res: Response) => {
       SELECT t.*, c.name as category_name, c.color as category_color
       FROM tasks t
       LEFT JOIN categories c ON t.category_id = c.id
-      WHERE t.user_id = ?
+      WHERE t.user_id = $1
     `;
     const params: any[] = [userId];
+    let paramCount = 1;
 
     if (status) {
-      query += ' AND t.status = ?';
+      paramCount++;
+      query += ` AND t.status = $${paramCount}`;
       params.push(status);
     }
     if (priority) {
-      query += ' AND t.priority = ?';
+      paramCount++;
+      query += ` AND t.priority = $${paramCount}`;
       params.push(priority);
     }
     if (category) {
-      query += ' AND c.name = ?';
+      paramCount++;
+      query += ` AND c.name = $${paramCount}`;
       params.push(category);
     }
 
-    query += ' ORDER BY t.created_at DESC';
+    query += " ORDER BY t.created_at DESC";
 
-    const [tasks] = await pool.query<TaskRow[]>(query, params);
+    const result = await pool.query(query, params);
 
     res.json({
-      tasks: tasks.map(formatTask)
+      tasks: result.rows.map(formatTask),
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch tasks' });
+    res.status(500).json({ error: "Failed to fetch tasks" });
   }
 };
 
@@ -137,63 +142,71 @@ export const updateTask = async (req: AuthRequest, res: Response) => {
     const taskId = parseInt(req.params.id);
     const { status, priority, title, notes } = req.body;
 
-    const [tasks] = await pool.query<TaskRow[]>(
-      'SELECT id FROM tasks WHERE id = ? AND user_id = ?',
+    const checkResult = await pool.query(
+      "SELECT id FROM tasks WHERE id = $1 AND user_id = $2",
       [taskId, userId]
     );
 
-    if (tasks.length === 0) {
-      return res.status(404).json({ error: 'Task not found' });
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: "Task not found" });
     }
 
     const updates: string[] = [];
     const params: any[] = [];
+    let paramCount = 0;
 
     if (status !== undefined) {
-      updates.push('status = ?');
+      paramCount++;
+      updates.push(`status = $${paramCount}`);
       params.push(status);
-      if (status === 'completed') {
-        updates.push('completed_at = NOW()');
+      if (status === "completed") {
+        paramCount++;
+        updates.push(`completed_at = $${paramCount}`);
+        params.push(new Date());
       }
     }
     if (priority !== undefined) {
-      updates.push('priority = ?');
+      paramCount++;
+      updates.push(`priority = $${paramCount}`);
       params.push(priority);
     }
     if (title !== undefined) {
-      updates.push('title = ?');
+      paramCount++;
+      updates.push(`title = $${paramCount}`);
       params.push(title);
     }
     if (notes !== undefined) {
-      updates.push('notes = ?');
+      paramCount++;
+      updates.push(`notes = $${paramCount}`);
       params.push(notes);
     }
 
     if (updates.length === 0) {
-      return res.status(400).json({ error: 'No updates provided' });
+      return res.status(400).json({ error: "No updates provided" });
     }
 
+    paramCount++;
     params.push(taskId);
 
     await pool.query(
-      `UPDATE tasks SET ${updates.join(', ')} WHERE id = ?`,
+      `UPDATE tasks SET ${updates.join(", ")} WHERE id = $${paramCount}`,
       params
     );
 
-    const [updatedTasks] = await pool.query<TaskRow[]>(
+    const updatedResult = await pool.query(
       `SELECT t.*, c.name as category_name, c.color as category_color
        FROM tasks t
        LEFT JOIN categories c ON t.category_id = c.id
-       WHERE t.id = ?`,
+       WHERE t.id = $1`,
       [taskId]
     );
 
     res.json({
-      message: 'Task updated successfully',
-      task: formatTask(updatedTasks[0])
+      message: "Task updated successfully",
+      task: formatTask(updatedResult.rows[0]),
     });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to update task' });
+    res.status(500).json({ error: "Failed to update task" });
   }
 };
 
@@ -202,30 +215,30 @@ export const deleteTask = async (req: AuthRequest, res: Response) => {
     const userId = req.userId!;
     const taskId = parseInt(req.params.id);
 
-    const [result] = await pool.query<ResultSetHeader>(
-      'DELETE FROM tasks WHERE id = ? AND user_id = ?',
+    const result = await pool.query(
+      "DELETE FROM tasks WHERE id = $1 AND user_id = $2",
       [taskId, userId]
     );
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({ error: 'Task not found' });
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Task not found" });
     }
 
-    res.json({ message: 'Task deleted successfully' });
+    res.json({ message: "Task deleted successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to delete task' });
+    res.status(500).json({ error: "Failed to delete task" });
   }
 };
 
 export const getCategories = async (req: AuthRequest, res: Response) => {
   try {
-    const [categories] = await pool.query<CategoryRow[]>(
-      'SELECT id, name, color FROM categories ORDER BY name'
+    const result = await pool.query(
+      "SELECT id, name, color FROM categories ORDER BY name"
     );
 
-    res.json({ categories });
+    res.json({ categories: result.rows });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch categories' });
+    res.status(500).json({ error: "Failed to fetch categories" });
   }
 };
 
@@ -238,11 +251,11 @@ function formatTask(task: TaskRow) {
     category: {
       id: task.category_id,
       name: task.category_name,
-      color: task.category_color
+      color: task.category_color,
     },
     notes: task.notes,
     createdAt: task.created_at,
     updatedAt: task.updated_at,
-    completedAt: task.completed_at
+    completedAt: task.completed_at,
   };
 }
